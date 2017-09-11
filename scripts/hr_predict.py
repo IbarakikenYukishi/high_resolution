@@ -24,10 +24,23 @@ image_input_w=8
 image_input_h=8
 image_output_w=32
 image_output_h=32
-pixels=image_w*image_h*3
+#pixels=image_w*image_h*3
 
 def generate_data(arr,file_list):
-	arr*=255
+	#arr = int(arr * 255 + 0.5)
+	arr *=255
+	arr += 0.5
+
+	arr=arr.astype('int')
+	for i in range(len(file_list)):
+		for j in range(image_output_h):
+			for k in range(image_output_w):
+				for l in range(3):
+					if arr[i,j,k,l]<0:
+						arr[i,j,k,l]=0
+					elif arr[i,j,k,l]>255:
+						arr[i,j,k,l]=255
+
 	arr=arr.astype('uint8')
 
 	for i in range(len(file_list)):
