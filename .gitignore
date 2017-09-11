@@ -1,0 +1,5 @@
+garbage/
+datasets/
+predict/
+models/
+!/models/model_predict
