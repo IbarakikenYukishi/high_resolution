@@ -80,43 +80,6 @@ def load_model():
 
 #モデルの準備
 def model_generate():
-	'''
-	model=Sequential()
-	model.add(Conv2D(nb_filters,(nb_conv,nb_conv),padding='same',input_shape=x_train.shape[1:]))
-	model.add(BatchNormalization())
-	model.add(Activation("relu"))
-	model.add(Dropout(0.20))
-	model.add(Conv2D(nb_filters,(nb_conv,nb_conv),padding='same'))
-	model.add(BatchNormalization())
-	model.add(Activation("relu"))
-	model.add(Dropout(0.20))
-	model.add(Conv2D(nb_filters,(nb_conv,nb_conv),padding='same'))
-	model.add(BatchNormalization())
-	model.add(Activation("relu"))
-	model.add(Dropout(0.20))
-	model.add(Conv2D(nb_filters,(nb_conv,nb_conv),padding='same'))
-	model.add(BatchNormalization())
-	model.add(Activation("relu"))
-	model.add(Dropout(0.20))
-	model.add(Conv2D(nb_filters,(nb_conv,nb_conv),padding='same'))
-	model.add(BatchNormalization())
-	model.add(Activation("relu"))
-	model.add(Dropout(0.20))
-	model.add(Conv2D(nb_filters,(nb_conv,nb_conv),padding='same'))
-	model.add(BatchNormalization())
-	model.add(Activation("relu"))
-	model.add(Dropout(0.20))
-	model.add(Conv2D(nb_filters,(nb_conv,nb_conv),padding='same'))
-	model.add(BatchNormalization())
-	model.add(Activation("relu"))
-	model.add(Dropout(0.20))
-	model.add(Conv2D(nb_filters,(nb_conv,nb_conv),padding='same'))
-	model.add(BatchNormalization())
-	model.add(Activation("relu"))
-	model.add(Dropout(0.20))
-	model.add(Conv2DTranspose(3,(nb_conv,nb_conv),strides=(4,4),padding='same'))
-	model.summary()
-	'''
 	in_=Input(x_train.shape[1:])
 	in_conv=Conv2D(nb_filters,(nb_conv,nb_conv),padding='same')(in_)
 	act=Activation("relu")(in_conv)
@@ -131,10 +94,44 @@ def model_generate():
 		merged=merge([batch_norm3,act],mode='sum')
 		act=merged
 	
+	f = h5py.File("../kasumi_models/model_predict/weights.h5")
+	layer_names = [n.decode('utf8') for n in f.attrs['layer_names']]
+	weight_value_tuples = []
+	print(layer_names)
+#	print(len(model.layers))
 	act3=Activation("relu")(act)
 	deconv=Conv2DTranspose(3,(4,4),strides=(4,4),padding='same')(act3)
 	model=Model(input=in_,output=deconv)
 	model.summary()
+
+	for k, name in enumerate(layer_names):
+		if k >= len(model.layers)-7:
+			# 全結合層の重みは読み込まない
+			break
+		g = f[name]
+		weight_names = [n.decode('utf8') for n in g.attrs['weight_names']]
+		if len(weight_names):
+			weight_values = [g[weight_name] for weight_name in weight_names]
+			layer = model.layers[k]
+			symbolic_weights = layer.trainable_weights + layer.non_trainable_weights
+			if len(weight_values) != len(symbolic_weights):
+				raise Exception('Layer #' + str(k) +
+								' (named "' + layer.name +
+								'" in the current model) was found to '
+								'correspond to layer ' + name +
+								' in the save file. '
+								'However the new layer ' + layer.name +
+								' expects ' + str(len(symbolic_weights)) +
+								' weights, but the saved weights have ' +
+								str(len(weight_values)) +
+								' elements.')
+			weight_value_tuples += zip(symbolic_weights, weight_values)
+	K.batch_set_value(weight_value_tuples)
+	f.close()
+
+
+
+
 
 	model.compile(loss='mse',
 		optimizer=Adam(lr=LearningRate),
@@ -145,18 +142,14 @@ if __name__ == '__main__':
 	config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
 	session = tf.Session(config=config)
 	tensorflow_backend.set_session(session)
-	f = h5py.File("../kasumi_models/model_predict/weights.h5")
-	layer_names = [n.decode('utf8') for n in f.attrs['layer_names']]
-	weight_value_tuples = []
-	print(layer_names)
-	print(len(model.layers))
 
-'''
+
+
 	#各層のパラメータ
 	nb_filters=128
 	nb_conv=4
 	nb_pool=2
-	nb_epoch=160
+	nb_epoch=500
 	batch_sample=32
 	image_w=32
 	image_h=32
@@ -179,10 +172,11 @@ if __name__ == '__main__':
 	x_test=[]
 	y_test=[]
 	x_train,y_train=load_data(train_dir,batch_sample)
-	print(x_train.shape[1:])
-	model=load_model()
-	if model==0:
-		model=model_generate()
+#	print(x_train.shape[1:])
+#	model=load_model()
+#	if model==0:
+#		model=model_generate()
+	model=model_generate()
 
 	for i in range(nb_epoch):
 		if i%100==0:
@@ -203,4 +197,3 @@ if __name__ == '__main__':
 			save_model(model,'model_'+str(i)+'.json','weights_'+str(i)+'.h5')
 
 	save_model(model,'model_final.json','weights_final.h5')
-'''
