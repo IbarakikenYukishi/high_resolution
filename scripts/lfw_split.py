@@ -17,28 +17,30 @@ import os
 import random
 import shutil
 
-caltech_dir="./lfw"
+caltech_dir="../kasumi_datasets/kasumi_output"
 dir_list=os.listdir(caltech_dir)
 file_list=[]
 
 
 for dir_path in dir_list:
 	abs_name=caltech_dir+'/'+dir_path;
-	img_list=os.listdir(abs_name)
-	for img_path in img_list:
-		file_list.append(abs_name+'/'+img_path)
+	file_list.append(abs_name)
+
+#	img_list=os.listdir(abs_name)
+#	for img_path in img_list:
+#		file_list.append(abs_name+'/'+img_path)
 
 random.shuffle(file_list)
 
-train_data=file_list[0:int(len(file_list)*0.8)]
-test_data=file_list[int(len(file_list)*0.8):len(file_list)]
+train_data=file_list[0:int(len(file_list)*0.9)]
+test_data=file_list[int(len(file_list)*0.9):len(file_list)]
 
 i=0
 for train_path in train_data:
-	shutil.copyfile(train_path,"./lfw_train/"+str(i)+".jpg")
+	shutil.copyfile(train_path,"../kasumi_datasets/train/"+str(i)+".png")
 	i+=1
 
 i=0
 for test_path in test_data:
-	shutil.copyfile(test_path,"./lfw_eval/"+str(i)+".jpg")
+	shutil.copyfile(test_path,"../kasumi_datasets/test/"+str(i)+".png")
 	i+=1

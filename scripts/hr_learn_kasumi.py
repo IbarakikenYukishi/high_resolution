@@ -19,7 +19,7 @@ from keras.backend import tensorflow_backend
 import cv2
 import numpy as np
 import os
-
+import h5py
 import random
 
 #モデルの保存
@@ -66,10 +66,10 @@ def load_data(directory,batch_size):
 
 
 def load_model():
-	model_path="../models/model_default/model.json"
+	model_path="../kasumi_models/model_default/model.json"
 	if os.path.exists(model_path)==1:
-		model = model_from_json(open('../models/model_default/model.json').read())
-		model.load_weights('../models/model_default/weights.h5')
+		model = model_from_json(open('../kasumi_models/model_default/model.json').read())
+		model.load_weights('../kasumi_models/model_default/weights.h5')
 		model.summary()
 
 		model.compile(loss='mse',
@@ -145,27 +145,33 @@ if __name__ == '__main__':
 	config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
 	session = tf.Session(config=config)
 	tensorflow_backend.set_session(session)
+	f = h5py.File("../kasumi_models/model_predict/weights.h5")
+	layer_names = [n.decode('utf8') for n in f.attrs['layer_names']]
+	weight_value_tuples = []
+	print(layer_names)
+	print(len(model.layers))
 
+'''
 	#各層のパラメータ
 	nb_filters=128
 	nb_conv=4
 	nb_pool=2
-	nb_epoch=500
-	batch_sample=128
+	nb_epoch=160
+	batch_sample=32
 	image_w=32
 	image_h=32
 	split=4
 	pixels=image_w*image_h*3
-	nb_iter=int(10000/batch_sample)
+	nb_iter=int(300/batch_sample)
 	LearningRate=0.001
 
 	#モデルを保存するフォルダ名
 	tdatetime=dt.now()
 	tstr=tdatetime.strftime('%Y-%m-%d %H:%M:%S')
-	tstr="../models/model_"+tstr+"/"
+	tstr="../kasumi_models/model_"+tstr+"/"
 	os.makedirs(tstr)
-	train_dir="../datasets/train"
-	test_dir="../datasets/test"
+	train_dir="../kasumi_datasets/train"
+	test_dir="../kasumi_datasets/test"
 
 	#学習用データとテスト用データ
 	x_train=[]
@@ -197,3 +203,4 @@ if __name__ == '__main__':
 			save_model(model,'model_'+str(i)+'.json','weights_'+str(i)+'.h5')
 
 	save_model(model,'model_final.json','weights_final.h5')
+'''

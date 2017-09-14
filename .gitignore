@@ -2,3 +2,5 @@ garbage/
 datasets/
 predict/
 models/
+kasumi_datasets/
+kasumi_models/

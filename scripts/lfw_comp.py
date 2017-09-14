@@ -99,8 +99,8 @@ for file_path in file_list:
 	img_trim(image,"./lfw_eval_trim/"+file_path)
 '''
 
-comp_dir="./lfw_eval"
+comp_dir="../kasumi_datasets/predict/ground_truth"
 file_list=os.listdir(comp_dir)
 for file_path in file_list:
 	image=cv2.imread(comp_dir+"/"+file_path)
-	img_comp(image,comp_dir+"_comp/"+file_path)
+	img_comp(image,"../kasumi_datasets/predict/data/"+file_path)
